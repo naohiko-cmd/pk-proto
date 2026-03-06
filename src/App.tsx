@@ -101,7 +101,7 @@ export default function App() {
             )}
           >
             <PlusCircle size={18} />
-            <span className="text-sm font-medium">新規計画作成</span>
+            <span className="text-sm font-medium">新規出展計画作成</span>
           </button>
           
           <button 
