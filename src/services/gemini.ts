@@ -6,16 +6,14 @@ let aiInstance: GoogleGenAI | null = null;
 async function getAiInstance(): Promise<GoogleGenAI> {
   if (aiInstance) return aiInstance;
 
-  let apiKey = process.env.GEMINI_API_KEY;
+  let apiKey = "";
   
-  if (!apiKey) {
-    try {
-      const response = await fetch('/api/config');
-      const config = await response.json();
-      apiKey = config.geminiApiKey;
-    } catch (e) {
-      console.error("Failed to fetch API config", e);
-    }
+  try {
+    const response = await fetch('/api/config');
+    const config = await response.json();
+    apiKey = config.geminiApiKey;
+  } catch (e) {
+    console.error("Failed to fetch API config", e);
   }
 
   if (!apiKey) {
@@ -79,7 +77,9 @@ export async function generateExhibitionPlan(profile: CompanyProfile): Promise<E
     }
   });
 
-  return JSON.parse(response.text || "{}");
+  let jsonStr = response.text || "{}";
+  jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+  return JSON.parse(jsonStr);
 }
 
 export async function generatePreparationTasks(exhibitionName: string, exhibitionDate: string): Promise<PreparationTask[]> {
@@ -110,5 +110,7 @@ export async function generatePreparationTasks(exhibitionName: string, exhibitio
     }
   });
 
-  return JSON.parse(response.text || "[]");
+  let jsonStr = response.text || "[]";
+  jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+  return JSON.parse(jsonStr);
 }

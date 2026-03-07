@@ -51,17 +51,20 @@ export default function App() {
   const [plan, setPlan] = useState<ExhibitionPlan | null>(null);
   const [tasks, setTasks] = useState<PreparationTask[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'form' | 'plan' | 'tasks'>('form');
   const [selectedExhibition, setSelectedExhibition] = useState<string | null>(null);
 
   const handleGeneratePlan = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const generatedPlan = await generateExhibitionPlan(profile);
       setPlan(generatedPlan);
       setActiveTab('plan');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate plan:", error);
+      setErrorMsg(error.message || "プランの生成に失敗しました。APIキーが設定されているか確認してください。");
     } finally {
       setLoading(false);
     }
@@ -69,6 +72,7 @@ export default function App() {
 
   const handleGenerateTasks = async (exhibitionName: string) => {
     setLoading(true);
+    setErrorMsg(null);
     setSelectedExhibition(exhibitionName);
     try {
       // Assume exhibition is 6 months from now for demo purposes
@@ -76,8 +80,9 @@ export default function App() {
       const generatedTasks = await generatePreparationTasks(exhibitionName, targetDate);
       setTasks(generatedTasks);
       setActiveTab('tasks');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate tasks:", error);
+      setErrorMsg(error.message || "タスクの生成に失敗しました。");
     } finally {
       setLoading(false);
     }
@@ -229,6 +234,12 @@ export default function App() {
                     </div>
 
                     <div className="pt-6">
+                      {errorMsg && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-start gap-3 text-sm">
+                          <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                          <p>{errorMsg}</p>
+                        </div>
+                      )}
                       <button 
                         onClick={handleGeneratePlan}
                         disabled={loading}
