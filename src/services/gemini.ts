@@ -1,9 +1,33 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CompanyProfile, ExhibitionPlan, PreparationTask } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+async function getAiInstance(): Promise<GoogleGenAI> {
+  if (aiInstance) return aiInstance;
+
+  let apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    try {
+      const response = await fetch('/api/config');
+      const config = await response.json();
+      apiKey = config.geminiApiKey;
+    } catch (e) {
+      console.error("Failed to fetch API config", e);
+    }
+  }
+
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not configured");
+  }
+
+  aiInstance = new GoogleGenAI({ apiKey });
+  return aiInstance;
+}
 
 export async function generateExhibitionPlan(profile: CompanyProfile): Promise<ExhibitionPlan> {
+  const ai = await getAiInstance();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `以下の企業プロフィールに基づいて、最適な年間展示会出展計画を提案してください。
@@ -59,6 +83,7 @@ export async function generateExhibitionPlan(profile: CompanyProfile): Promise<E
 }
 
 export async function generatePreparationTasks(exhibitionName: string, exhibitionDate: string): Promise<PreparationTask[]> {
+  const ai = await getAiInstance();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `展示会「${exhibitionName}」（開催日: ${exhibitionDate}）に向けた、詳細な準備タスクリストを作成してください。

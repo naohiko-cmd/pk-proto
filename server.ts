@@ -16,6 +16,11 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Endpoint to provide the Gemini API key to the client
+  app.get("/api/config", (req, res) => {
+    res.json({ geminiApiKey: process.env.GEMINI_API_KEY || "" });
+  });
+
   if (process.env.NODE_ENV !== "production") {
     // Vite middleware for development
     const vite = await createViteServer({
@@ -31,7 +36,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
