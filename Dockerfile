@@ -18,6 +18,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+ENV NODE_ENV=production
+
 # Copy built assets and dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.ts ./
